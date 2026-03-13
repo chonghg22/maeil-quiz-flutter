@@ -19,6 +19,7 @@ class QuizState {
   final bool hasMore;
   final Map<int, AnswerResult> answerResults; // questionId -> result
   final Map<int, int> selectedAnswers; // questionId -> selected option (1-4)
+  final Set<int> loadingQuestions; // 답변 제출 중인 questionId
 
   const QuizState({
     this.questions = const [],
@@ -27,6 +28,7 @@ class QuizState {
     this.hasMore = true,
     this.answerResults = const {},
     this.selectedAnswers = const {},
+    this.loadingQuestions = const {},
   });
 
   QuizState copyWith({
@@ -36,6 +38,7 @@ class QuizState {
     bool? hasMore,
     Map<int, AnswerResult>? answerResults,
     Map<int, int>? selectedAnswers,
+    Set<int>? loadingQuestions,
   }) {
     return QuizState(
       questions: questions ?? this.questions,
@@ -44,6 +47,7 @@ class QuizState {
       hasMore: hasMore ?? this.hasMore,
       answerResults: answerResults ?? this.answerResults,
       selectedAnswers: selectedAnswers ?? this.selectedAnswers,
+      loadingQuestions: loadingQuestions ?? this.loadingQuestions,
     );
   }
 }
@@ -91,9 +95,10 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
     final current = state.valueOrNull;
     if (current == null) return;
 
-    // 선택한 보기 즉시 반영
+    // 선택한 보기 + 로딩 상태 즉시 반영
     state = AsyncData(current.copyWith(
       selectedAnswers: {...current.selectedAnswers, questionId: answer},
+      loadingQuestions: {...current.loadingQuestions, questionId},
     ));
 
     try {
@@ -106,8 +111,14 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
       final updated = state.valueOrNull ?? current;
       state = AsyncData(updated.copyWith(
         answerResults: {...updated.answerResults, questionId: result},
+        loadingQuestions: {...updated.loadingQuestions}..remove(questionId),
       ));
-    } catch (_) {}
+    } catch (_) {
+      final updated = state.valueOrNull ?? current;
+      state = AsyncData(updated.copyWith(
+        loadingQuestions: {...updated.loadingQuestions}..remove(questionId),
+      ));
+    }
   }
 }
 

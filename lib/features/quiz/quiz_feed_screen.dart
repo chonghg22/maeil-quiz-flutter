@@ -74,15 +74,23 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
               final question = quizState.questions[index];
               final selected = quizState.selectedAnswers[question.id];
               final result = quizState.answerResults[question.id];
+              final isLoading = quizState.loadingQuestions.contains(question.id);
 
               return _QuizCard(
                 question: question,
                 selectedAnswer: selected,
                 answerResult: result,
+                isSubmitting: isLoading,
                 onAnswerSelected: (answer) {
-                  if (selected == null) {
+                  if (selected == null && !isLoading) {
                     ref.read(quizProvider.notifier).submitAnswer(question.id, answer);
                   }
+                },
+                onNext: () {
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeInOut,
+                  );
                 },
               );
             },
@@ -97,13 +105,17 @@ class _QuizCard extends StatelessWidget {
   final Question question;
   final int? selectedAnswer;
   final AnswerResult? answerResult;
+  final bool isSubmitting;
   final ValueChanged<int> onAnswerSelected;
+  final VoidCallback onNext;
 
   const _QuizCard({
     required this.question,
     required this.selectedAnswer,
     required this.answerResult,
+    required this.isSubmitting,
     required this.onAnswerSelected,
+    required this.onNext,
   });
 
   @override
@@ -148,6 +160,7 @@ class _QuizCard extends StatelessWidget {
                           text: optionText,
                           selectedAnswer: selectedAnswer,
                           correctAnswer: answerResult?.answer,
+                          isSubmitting: isSubmitting && selectedAnswer == optionIndex,
                           onTap: () => onAnswerSelected(optionIndex),
                         );
                       }),
@@ -159,14 +172,31 @@ class _QuizCard extends StatelessWidget {
                           correct: answerResult!.correct,
                           explanation: answerResult!.explanation,
                         ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: onNext,
+                            icon: const Icon(Icons.arrow_forward),
+                            label: const Text('다음 문제'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6B21A8),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ],
                   ),
                 ),
               ),
 
-              // 스크롤 힌트
-              if (selectedAnswer == null)
+              // 스크롤 힌트 (답변 전에만 표시)
+              if (selectedAnswer == null && !isSubmitting)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.only(top: 8),
@@ -211,6 +241,7 @@ class _OptionButton extends StatelessWidget {
   final String text;
   final int? selectedAnswer;
   final int? correctAnswer;
+  final bool isSubmitting;
   final VoidCallback onTap;
 
   const _OptionButton({
@@ -218,6 +249,7 @@ class _OptionButton extends StatelessWidget {
     required this.text,
     required this.selectedAnswer,
     required this.correctAnswer,
+    required this.isSubmitting,
     required this.onTap,
   });
 
@@ -277,16 +309,25 @@ class _OptionButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: _getTextColor(),
-                  fontWeight: selectedAnswer != null && index == correctAnswer
-                      ? FontWeight.w600
-                      : FontWeight.normal,
-                ),
-              ),
+              child: isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF6B21A8),
+                      ),
+                    )
+                  : Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: _getTextColor(),
+                        fontWeight: selectedAnswer != null && index == correctAnswer
+                            ? FontWeight.w600
+                            : FontWeight.normal,
+                      ),
+                    ),
             ),
           ],
         ),
