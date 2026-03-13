@@ -42,7 +42,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('카테고리가 저장되었습니다'), duration: Duration(seconds: 2)),
         );
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {

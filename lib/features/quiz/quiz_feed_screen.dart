@@ -43,8 +43,10 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.push('/settings').then((_) {
-              ref.invalidate(quizProvider);
+            onPressed: () => context.push('/settings').then((categoryChanged) {
+              if (categoryChanged == true) {
+                ref.invalidate(quizProvider);
+              }
             }),
           ),
         ],

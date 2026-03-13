@@ -54,7 +54,9 @@ class SettingsScreen extends ConsumerWidget {
             iconColor: const Color(0xFF6B21A8),
             title: '카테고리 설정',
             subtitle: '관심 카테고리를 선택하세요',
-            onTap: () => context.push('/categories'),
+            onTap: () => context.push('/categories').then((changed) {
+            if (changed == true) context.pop(true);
+          }),
           ),
         ],
       ),
