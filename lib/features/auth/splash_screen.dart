@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'user_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,30 +10,52 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final _userRepo = UserRepository();
+
   @override
   void initState() {
     super.initState();
-    _navigate();
+    _init();
   }
 
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _init() async {
+    try {
+      final androidId = await _userRepo.getOrCreateAndroidId();
+      await _userRepo.register(androidId);
+    } catch (_) {
+      // 등록 실패해도 퀴즈 화면으로 진행
+    }
+
     if (mounted) context.go('/quiz');
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
+      backgroundColor: const Color(0xFF6B21A8),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               '매일퀴즈',
-              style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
             ),
-            SizedBox(height: 16),
-            CircularProgressIndicator(),
+            const SizedBox(height: 12),
+            Text(
+              '매일 새로운 지식을 채우세요',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 48),
+            const CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),
