@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'models/answer_result.dart';
 import 'models/question.dart';
 import 'quiz_provider.dart';
@@ -39,6 +40,12 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF6B21A8),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
       ),
       body: quizAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF6B21A8))),

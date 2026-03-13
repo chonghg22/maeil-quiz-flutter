@@ -3,6 +3,7 @@ import '../../features/auth/splash_screen.dart';
 import '../../features/quiz/quiz_feed_screen.dart';
 import '../../features/payment/payment_screen.dart';
 import '../../features/settings/settings_screen.dart';
+import '../../features/settings/category_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -18,6 +19,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/categories',
+      builder: (context, state) => const CategoryScreen(),
     ),
     GoRoute(
       path: '/payment',
