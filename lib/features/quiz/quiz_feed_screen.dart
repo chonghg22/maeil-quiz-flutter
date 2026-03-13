@@ -160,7 +160,7 @@ class _QuizCard extends StatelessWidget {
                           text: optionText,
                           selectedAnswer: selectedAnswer,
                           correctAnswer: answerResult?.answer,
-                          isSubmitting: isSubmitting && selectedAnswer == optionIndex,
+                          isSubmitting: isSubmitting,
                           onTap: () => onAnswerSelected(optionIndex),
                         );
                       }),
@@ -274,10 +274,15 @@ class _OptionButton extends StatelessWidget {
     return const Color(0xFF9CA3AF);
   }
 
+  bool get _isSelected => selectedAnswer == index;
+
   @override
   Widget build(BuildContext context) {
+    // 로딩 중이거나 이미 선택된 경우 모든 버튼 비활성화
+    final isDisabled = isSubmitting || selectedAnswer != null;
+
     return GestureDetector(
-      onTap: selectedAnswer == null ? onTap : null,
+      onTap: isDisabled ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 10),
@@ -309,16 +314,10 @@ class _OptionButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: isSubmitting
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFF6B21A8),
-                      ),
-                    )
-                  : Text(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
                       text,
                       style: TextStyle(
                         fontSize: 15,
@@ -328,6 +327,21 @@ class _OptionButton extends StatelessWidget {
                             : FontWeight.normal,
                       ),
                     ),
+                  ),
+                  // 선택한 버튼에만 스피너 표시
+                  if (isSubmitting && _isSelected) ...[
+                    const SizedBox(width: 8),
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF6B21A8),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
         ),
