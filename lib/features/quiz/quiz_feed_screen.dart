@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/widgets/ad_banner_widget.dart';
+import '../../shared/widgets/ad_interstitial_helper.dart';
 import 'models/answer_result.dart';
 import 'models/question.dart';
 import 'quiz_provider.dart';
@@ -15,11 +16,19 @@ class QuizFeedScreen extends ConsumerStatefulWidget {
 
 class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
   final _pageController = PageController();
+  final _adInterstitial = AdInterstitialHelper();
   int _answerCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _adInterstitial.preload();
+  }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _adInterstitial.dispose();
     super.dispose();
   }
 
@@ -38,23 +47,8 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
   }
 
   void _onNext() {
-    if (_answerCount > 0 && _answerCount % 10 == 0) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          contentPadding: const EdgeInsets.all(16),
-          content: const AdBannerWidget(),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _goToNextPage();
-              },
-              child: const Text('다음'),
-            ),
-          ],
-        ),
-      );
+    if (_answerCount > 0 && _answerCount % 15 == 0) {
+      _adInterstitial.show(onDismissed: _goToNextPage);
     } else {
       _goToNextPage();
     }
@@ -66,6 +60,7 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
+      bottomNavigationBar: const AdBannerWidget(),
       appBar: AppBar(
         title: const Text('매일퀴즈', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
