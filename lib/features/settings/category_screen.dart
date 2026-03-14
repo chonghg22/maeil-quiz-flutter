@@ -22,22 +22,22 @@ class CategoryScreen extends ConsumerStatefulWidget {
 
 class _CategoryScreenState extends ConsumerState<CategoryScreen> {
   final _repo = SettingsRepository();
-  late Set<String> _selected;
+  late String? _selected;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _selected = Set.from(categories); // 기본값으로 초기화
+    _selected = categories.isNotEmpty ? categories.first : null; // 첫 번째 카테고리 기본값
   }
 
   Future<void> _save() async {
-    if (_selected.isEmpty) return;
+    if (_selected == null) return;
     setState(() => _isSaving = true);
 
     try {
       final androidId = await ref.read(androidIdProvider.future);
-      await _repo.updateCategories(androidId, _selected.toList());
+      await _repo.updateCategories(androidId, [_selected!]);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('카테고리가 저장되었습니다'), duration: Duration(seconds: 2)),
@@ -55,13 +55,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
     }
   }
 
-  void _toggle(String category) {
+  void _select(String category) {
     setState(() {
-      if (_selected.contains(category)) {
-        if (_selected.length > 1) _selected.remove(category);
-      } else {
-        _selected.add(category);
-      }
+      _selected = category;
     });
   }
 
@@ -80,7 +76,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
             child: Text(
-              '관심 있는 카테고리를 선택하세요 (최소 1개)',
+              '관심 있는 카테고리를 하나 선택하세요',
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ),
@@ -92,12 +88,12 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
               mainAxisSpacing: 12,
               childAspectRatio: 1.4,
               children: categories.map((cat) {
-                final isSelected = _selected.contains(cat);
+                final isSelected = _selected == cat;
                 return _CategoryCard(
                   category: cat,
                   icon: _categoryIcons[cat] ?? Icons.quiz,
                   isSelected: isSelected,
-                  onTap: () => _toggle(cat),
+                  onTap: () => _select(cat),
                 );
               }).toList(),
             ),
@@ -107,7 +103,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: (_selected.isEmpty || _isSaving) ? null : _save,
+                onPressed: (_selected == null || _isSaving) ? null : _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6B21A8),
                   foregroundColor: Colors.white,

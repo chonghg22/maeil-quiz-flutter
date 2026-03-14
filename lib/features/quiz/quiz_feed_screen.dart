@@ -14,6 +14,7 @@ class QuizFeedScreen extends ConsumerStatefulWidget {
 
 class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
   final _pageController = PageController();
+  int _answerCount = 0;
 
   @override
   void dispose() {
@@ -25,6 +26,40 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
     // 마지막 2개 남으면 추가 로딩
     if (index >= quizState.questions.length - 2) {
       ref.read(quizProvider.notifier).loadMore();
+    }
+  }
+
+  void _goToNextPage() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onNext() {
+    if (_answerCount > 0 && _answerCount % 10 == 0) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          contentPadding: const EdgeInsets.all(16),
+          content: Container(
+            height: 60,
+            color: Colors.grey[200],
+            child: const Center(child: Text('광고 영역')),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _goToNextPage();
+              },
+              child: const Text('다음'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      _goToNextPage();
     }
   }
 
@@ -95,14 +130,10 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
                 onAnswerSelected: (answer) {
                   if (selected == null && !isLoading) {
                     ref.read(quizProvider.notifier).submitAnswer(question.id, answer);
+                    setState(() => _answerCount++);
                   }
                 },
-                onNext: () {
-                  _pageController.nextPage(
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOut,
-                  );
-                },
+                onNext: _onNext,
               );
             },
           );
