@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../shared/widgets/ad_banner_widget.dart';
 import 'models/answer_result.dart';
 import 'models/question.dart';
 import 'quiz_provider.dart';
@@ -42,11 +43,7 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
         context: context,
         builder: (_) => AlertDialog(
           contentPadding: const EdgeInsets.all(16),
-          content: Container(
-            height: 60,
-            color: Colors.grey[200],
-            child: const Center(child: Text('광고 영역')),
-          ),
+          content: const AdBannerWidget(),
           actions: [
             TextButton(
               onPressed: () {
