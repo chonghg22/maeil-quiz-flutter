@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'user_repository.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -22,11 +23,25 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final androidId = await _userRepo.getOrCreateAndroidId();
       await _userRepo.register(androidId);
+      await _resetDailyCountIfNeeded(androidId);
     } catch (e) {
-      debugPrint('register error: $e');
+      debugPrint('init error: $e');
     }
 
     if (mounted) context.go('/quiz');
+  }
+
+  Future<void> _resetDailyCountIfNeeded(String androidId) async {
+    final supabase = Supabase.instance.client;
+    final today = DateTime.now().toLocal().toString().substring(0, 10);
+    await supabase
+        .from('users')
+        .update({
+          'daily_count': 0,
+          'daily_reset_at': DateTime.now().toIso8601String(),
+        })
+        .eq('android_id', androidId)
+        .lt('daily_reset_at', today);
   }
 
   @override
