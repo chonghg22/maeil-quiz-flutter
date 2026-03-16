@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdInterstitialHelper {
-  static const _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  static const _adUnitId = 'ca-app-pub-1242280591895560/7058174693';
 
   InterstitialAd? _interstitialAd;
 
