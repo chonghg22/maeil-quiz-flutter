@@ -1,20 +1,15 @@
-import '../../core/api/api_client.dart';
+import '../auth/user_repository.dart';
 
 class SettingsRepository {
-  final _api = ApiClient().dio;
+  final _userRepo = UserRepository();
 
-  Future<Map<String, dynamic>> getSubscriptionStatus(String androidId) async {
-    final response = await _api.get(
-      '/api/v1/users/subscription-status',
-      queryParameters: {'androidId': androidId},
-    );
-    return response.data['data'] as Map<String, dynamic>;
+  Future<Map<String, dynamic>> getSubscriptionStatus(
+      String androidId) async {
+    return _userRepo.getSubscriptionStatus(androidId);
   }
 
-  Future<void> updateCategories(String androidId, List<String> categories) async {
-    await _api.patch(
-      '/api/v1/users/categories',
-      data: {'androidId': androidId, 'categories': categories},
-    );
+  Future<void> updateCategories(
+      String androidId, List<String> categories) async {
+    await _userRepo.updateCategories(androidId, categories);
   }
 }

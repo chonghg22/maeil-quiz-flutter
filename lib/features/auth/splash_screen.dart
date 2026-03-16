@@ -22,8 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       final androidId = await _userRepo.getOrCreateAndroidId();
       await _userRepo.register(androidId);
-    } catch (_) {
-      // 등록 실패해도 퀴즈 화면으로 진행
+    } catch (e) {
+      debugPrint('register error: $e');
     }
 
     if (mounted) context.go('/quiz');
