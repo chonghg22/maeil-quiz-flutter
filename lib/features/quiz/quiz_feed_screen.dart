@@ -289,6 +289,8 @@ class _OptionButton extends StatelessWidget {
 
   Color _getBackgroundColor() {
     if (selectedAnswer == null) return const Color(0xFFF8F8F8);
+    // 로딩 중: 선택한 보기만 노란색
+    if (isSubmitting && index == selectedAnswer) return Colors.amber.withValues(alpha: 0.1);
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFFDCFCE7);
     if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFFFE4E6);
     return const Color(0xFFF8F8F8);
@@ -296,6 +298,8 @@ class _OptionButton extends StatelessWidget {
 
   Color _getBorderColor() {
     if (selectedAnswer == null) return const Color(0xFFE5E7EB);
+    // 로딩 중: 선택한 보기만 노란색
+    if (isSubmitting && index == selectedAnswer) return Colors.amber;
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFF22C55E);
     if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFEF4444);
     return const Color(0xFFE5E7EB);
@@ -303,6 +307,8 @@ class _OptionButton extends StatelessWidget {
 
   Color _getTextColor() {
     if (selectedAnswer == null) return const Color(0xFF374151);
+    // 로딩 중: 선택한 보기만 노란색
+    if (isSubmitting && index == selectedAnswer) return Colors.amber.shade700;
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFF16A34A);
     if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFDC2626);
     return const Color(0xFF9CA3AF);
