@@ -181,6 +181,7 @@ class _QuizCard extends StatelessWidget {
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
                           height: 1.6,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -306,7 +307,7 @@ class _OptionButton extends StatelessWidget {
   }
 
   Color _getTextColor() {
-    if (selectedAnswer == null) return const Color(0xFF374151);
+    if (selectedAnswer == null) return Colors.black87;
     // 로딩 중: 선택한 보기만 노란색
     if (isSubmitting && index == selectedAnswer) return Colors.amber.shade700;
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFF16A34A);
