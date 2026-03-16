@@ -127,7 +127,7 @@ class _SubscriptionTile extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: isLoading
-                  ? const Text('불러오는 중...', style: TextStyle(color: Colors.grey))
+                  ? const Text('불러오는 중...', style: TextStyle(color: Colors.black54))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -143,7 +143,7 @@ class _SubscriptionTile extends StatelessWidget {
                           isPremium
                               ? '무제한 퀴즈 이용 중'
                               : '오늘 남은 퀴즈: ${remaining ?? 0}개',
-                          style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                         ),
                       ],
                     ),
@@ -190,8 +190,8 @@ class _SettingsTile extends StatelessWidget {
           ),
           child: Icon(icon, color: iconColor, size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-        subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black87)),
+        subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
       ),
     );
