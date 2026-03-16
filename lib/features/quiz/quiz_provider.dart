@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
 import 'models/answer_result.dart';
 import 'models/question.dart';
@@ -17,6 +18,7 @@ class QuizState {
   final int cursor;
   final bool isLoadingMore;
   final bool hasMore;
+  final String category;
   final Map<int, AnswerResult> answerResults; // questionId -> result
   final Map<int, int> selectedAnswers; // questionId -> selected option (1-4)
   final Set<int> loadingQuestions; // 답변 제출 중인 questionId
@@ -26,6 +28,7 @@ class QuizState {
     this.cursor = 0,
     this.isLoadingMore = false,
     this.hasMore = true,
+    this.category = 'IT',
     this.answerResults = const {},
     this.selectedAnswers = const {},
     this.loadingQuestions = const {},
@@ -36,6 +39,7 @@ class QuizState {
     int? cursor,
     bool? isLoadingMore,
     bool? hasMore,
+    String? category,
     Map<int, AnswerResult>? answerResults,
     Map<int, int>? selectedAnswers,
     Set<int>? loadingQuestions,
@@ -45,6 +49,7 @@ class QuizState {
       cursor: cursor ?? this.cursor,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
+      category: category ?? this.category,
       answerResults: answerResults ?? this.answerResults,
       selectedAnswers: selectedAnswers ?? this.selectedAnswers,
       loadingQuestions: loadingQuestions ?? this.loadingQuestions,
@@ -58,12 +63,27 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
   @override
   Future<QuizState> build() async {
     final androidId = await ref.watch(androidIdProvider.future);
-    final questions = await _repo.fetchFeed(androidId: androidId, cursor: 0);
+
+    final userResult = await Supabase.instance.client
+        .from('users')
+        .select('categories')
+        .eq('android_id', androidId)
+        .single();
+    final categoriesList = userResult['categories'] as List;
+    final category =
+        categoriesList.isNotEmpty ? categoriesList[0] as String : 'IT';
+
+    final questions = await _repo.fetchFeed(
+      androidId: androidId,
+      cursor: 0,
+      category: category,
+    );
     final nextCursor = questions.isNotEmpty ? questions.last.id : 0;
     return QuizState(
       questions: questions,
       cursor: nextCursor,
       hasMore: questions.length >= 10,
+      category: category,
     );
   }
 
@@ -78,6 +98,7 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
       final more = await _repo.fetchFeed(
         androidId: androidId,
         cursor: current.cursor,
+        category: current.category,
       );
       final nextCursor = more.isNotEmpty ? more.last.id : current.cursor;
       state = AsyncData(current.copyWith(
