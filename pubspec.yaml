@@ -10,8 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # HTTP 클라이언트
-  dio: ^5.4.0
+  # Supabase
+  supabase_flutter: ^2.3.4
 
   # 상태 관리
   riverpod: ^2.5.1

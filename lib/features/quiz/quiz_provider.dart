@@ -103,10 +103,15 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
 
     try {
       final androidId = await ref.read(androidIdProvider.future);
+      final question =
+          current.questions.firstWhere((q) => q.id == questionId);
+      final isCorrect = answer == question.correctAnswer;
       final result = await _repo.submitAnswer(
         questionId: questionId,
         androidId: androidId,
-        answer: answer,
+        isCorrect: isCorrect,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation,
       );
       final updated = state.valueOrNull ?? current;
       state = AsyncData(updated.copyWith(

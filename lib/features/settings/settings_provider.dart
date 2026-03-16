@@ -16,7 +16,7 @@ final subscriptionProvider = FutureProvider<SubscriptionStatus>((ref) async {
   final repo = SettingsRepository();
   final data = await repo.getSubscriptionStatus(androidId);
   return SubscriptionStatus(
-    isPremium: data['isPremium'] as bool? ?? false,
-    dailyCount: data['dailyCount'] as int? ?? 0,
+    isPremium: data['is_premium'] as bool? ?? false,
+    dailyCount: data['daily_count'] as int? ?? 0,
   );
 });

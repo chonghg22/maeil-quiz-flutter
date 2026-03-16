@@ -1,39 +1,56 @@
-import '../../core/api/api_client.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'models/answer_result.dart';
 import 'models/question.dart';
 
 class QuizRepository {
-  final _api = ApiClient().dio;
+  final _supabase = Supabase.instance.client;
 
   Future<List<Question>> fetchFeed({
     required String androidId,
     required int cursor,
+    String category = '',
     int size = 10,
   }) async {
-    final response = await _api.get(
-      '/api/v1/questions/feed',
-      queryParameters: {
-        'androidId': androidId,
-        'cursor': cursor,
-        'size': size,
-      },
-    );
+    final data = await _supabase.rpc('get_quiz_feed', params: {
+      'p_android_id': androidId,
+      'p_category': category,
+      'p_cursor': cursor,
+      'p_size': size,
+    });
 
-    final data = response.data['data'];
     final List<dynamic> list = data is List ? data : [];
-    return list.map((e) => Question.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => Question.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<AnswerResult> submitAnswer({
     required int questionId,
     required String androidId,
-    required int answer,
+    required bool isCorrect,
+    required int correctAnswer,
+    required String explanation,
   }) async {
-    final response = await _api.post(
-      '/api/v1/questions/$questionId/answer',
-      data: {'androidId': androidId, 'answer': answer},
-    );
+    final userResult = await _supabase
+        .from('users')
+        .select('id')
+        .eq('android_id', androidId)
+        .single();
+    final userId = userResult['id'];
 
-    return AnswerResult.fromJson(response.data['data'] as Map<String, dynamic>);
+    await _supabase.from('user_history').insert({
+      'user_id': userId,
+      'question_id': questionId,
+      'is_correct': isCorrect,
+    });
+
+    await _supabase.rpc('increment_daily_count',
+        params: {'p_android_id': androidId});
+
+    return AnswerResult(
+      correct: isCorrect,
+      answer: correctAnswer,
+      explanation: explanation,
+    );
   }
 }
