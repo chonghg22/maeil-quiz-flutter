@@ -339,16 +339,20 @@ class _OptionButton extends StatelessWidget {
               width: 26,
               height: 26,
               decoration: BoxDecoration(
-                color: _getBorderColor().withOpacity(0.15),
+                color: selectedAnswer == null
+                    ? Colors.black.withValues(alpha: 0.06)
+                    : _getBorderColor().withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   '$index',
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 13,
-                    color: _getBorderColor(),
+                    color: selectedAnswer == null
+                        ? Colors.black87
+                        : _getBorderColor(),
                   ),
                 ),
               ),
