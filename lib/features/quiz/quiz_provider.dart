@@ -68,10 +68,17 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
         .from('users')
         .select('categories')
         .eq('android_id', androidId)
-        .single();
-    final categoriesList = userResult['categories'] as List;
-    final category =
-        categoriesList.isNotEmpty ? categoriesList[0] as String : 'IT';
+        .maybeSingle();
+
+    String category = 'IT';
+    if (userResult != null && userResult['categories'] != null) {
+      final categories = userResult['categories'];
+      if (categories is List && categories.isNotEmpty) {
+        category = categories[0].toString();
+      } else if (categories is String && categories.isNotEmpty) {
+        category = categories;
+      }
+    }
 
     final questions = await _repo.fetchFeed(
       androidId: androidId,
