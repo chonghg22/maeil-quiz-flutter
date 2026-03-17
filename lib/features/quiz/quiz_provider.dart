@@ -19,6 +19,7 @@ class QuizState {
   final bool isLoadingMore;
   final bool hasMore;
   final String category;
+  final bool isDailyLimitReached;
   final Map<int, AnswerResult> answerResults; // questionId -> result
   final Map<int, int> selectedAnswers; // questionId -> selected option (1-4)
   final Set<int> loadingQuestions; // 답변 제출 중인 questionId
@@ -29,6 +30,7 @@ class QuizState {
     this.isLoadingMore = false,
     this.hasMore = true,
     this.category = 'IT',
+    this.isDailyLimitReached = false,
     this.answerResults = const {},
     this.selectedAnswers = const {},
     this.loadingQuestions = const {},
@@ -40,6 +42,7 @@ class QuizState {
     bool? isLoadingMore,
     bool? hasMore,
     String? category,
+    bool? isDailyLimitReached,
     Map<int, AnswerResult>? answerResults,
     Map<int, int>? selectedAnswers,
     Set<int>? loadingQuestions,
@@ -50,6 +53,7 @@ class QuizState {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
       category: category ?? this.category,
+      isDailyLimitReached: isDailyLimitReached ?? this.isDailyLimitReached,
       answerResults: answerResults ?? this.answerResults,
       selectedAnswers: selectedAnswers ?? this.selectedAnswers,
       loadingQuestions: loadingQuestions ?? this.loadingQuestions,
@@ -141,10 +145,21 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
       );
+      bool isDailyLimitReached = false;
+      try {
+        final countResult = await Supabase.instance.client
+            .from('users')
+            .select('daily_count')
+            .eq('android_id', androidId)
+            .single();
+        isDailyLimitReached = (countResult['daily_count'] as int) >= 20;
+      } catch (_) {}
+
       final updated = state.valueOrNull ?? current;
       state = AsyncData(updated.copyWith(
         answerResults: {...updated.answerResults, questionId: result},
         loadingQuestions: {...updated.loadingQuestions}..remove(questionId),
+        isDailyLimitReached: isDailyLimitReached,
       ));
     } catch (_) {
       final updated = state.valueOrNull ?? current;
