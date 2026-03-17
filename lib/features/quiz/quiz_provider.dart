@@ -133,7 +133,7 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
       final androidId = await ref.read(androidIdProvider.future);
       final question =
           current.questions.firstWhere((q) => q.id == questionId);
-      final isCorrect = answer == question.correctAnswer;
+      final isCorrect = answer + 1 == question.correctAnswer; // answer: 0-based, correctAnswer: 1-based
       final result = await _repo.submitAnswer(
         questionId: questionId,
         androidId: androidId,
