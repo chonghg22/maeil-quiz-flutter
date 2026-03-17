@@ -38,11 +38,15 @@ class QuizRepository {
         .single();
     final userId = userResult['id'];
 
-    await _supabase.from('user_history').insert({
-      'user_id': userId,
-      'question_id': questionId,
-      'is_correct': isCorrect,
-    });
+    try {
+      await _supabase.from('user_history').insert({
+        'user_id': userId,
+        'question_id': questionId,
+        'is_correct': isCorrect,
+      });
+    } catch (_) {
+      // 히스토리 저장 실패해도 일일 카운트는 증가
+    }
 
     await _supabase.rpc('increment_daily_count',
         params: {'p_android_id': androidId});

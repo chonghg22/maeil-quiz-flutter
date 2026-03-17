@@ -103,7 +103,7 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
           return PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            physics: const ClampingScrollPhysics(),
+            physics: const PageScrollPhysics(),
             onPageChanged: (index) => _onPageChanged(index, quizState),
             itemCount: quizState.questions.length + (quizState.isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
@@ -173,7 +173,7 @@ class _QuizCard extends StatelessWidget {
               // 문제 내용
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
