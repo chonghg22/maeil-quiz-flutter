@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -68,20 +69,25 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
   Future<QuizState> build() async {
     final androidId = await ref.watch(androidIdProvider.future);
 
-    final userResult = await Supabase.instance.client
-        .from('users')
-        .select('categories')
-        .eq('android_id', androidId)
-        .maybeSingle();
-
     String category = 'IT';
-    if (userResult != null && userResult['categories'] != null) {
-      final categories = userResult['categories'];
-      if (categories is List && categories.isNotEmpty) {
-        category = categories[0].toString();
-      } else if (categories is String && categories.isNotEmpty) {
-        category = categories;
+    try {
+      final userResult = await Supabase.instance.client
+          .from('users')
+          .select('categories')
+          .eq('android_id', androidId)
+          .maybeSingle();
+
+      if (userResult != null && userResult['categories'] != null) {
+        final categories = userResult['categories'];
+        if (categories is List && categories.isNotEmpty) {
+          category = categories[0].toString();
+        } else if (categories is String && categories.isNotEmpty) {
+          category = categories;
+        }
       }
+    } catch (e) {
+      debugPrint('categories fetch error: $e');
+      // 네트워크 오류 시 기본 카테고리(IT)로 진행
     }
 
     final questions = await _repo.fetchFeed(
