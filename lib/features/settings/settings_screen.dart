@@ -1,15 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'settings_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/app_constants.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final subscriptionAsync = ref.watch(subscriptionProvider);
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
 
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _isLoading = true;
+  bool _isPremium = false;
+  int _remaining = 20;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStatus();
+  }
+
+  Future<void> _loadStatus() async {
+    setState(() => _isLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final androidId = prefs.getString(androidIdKey) ?? '';
+      if (androidId.isEmpty) return;
+
+      final result = await Supabase.instance.client
+          .from('users')
+          .select('daily_count, is_premium')
+          .eq('android_id', androidId)
+          .single();
+
+      final remaining =
+          (20 - (result['daily_count'] as int? ?? 0)).clamp(0, 20);
+
+      if (mounted) {
+        setState(() {
+          _isPremium = result['is_premium'] as bool? ?? false;
+          _remaining = remaining;
+        });
+      }
+    } catch (_) {
+      // 조회 실패 시 기본값 유지
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -22,24 +66,12 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           const SizedBox(height: 16),
           _SectionHeader(title: '구독'),
-          subscriptionAsync.when(
-            loading: () => const _SubscriptionTile(
-              isPremium: false,
-              remaining: null,
-              isLoading: true,
-            ),
-            error: (_, __) => const _SubscriptionTile(
-              isPremium: false,
-              remaining: null,
-              isLoading: false,
-            ),
-            data: (status) => _SubscriptionTile(
-              isPremium: status.isPremium,
-              remaining: status.remaining,
-              isLoading: false,
-            ),
+          _SubscriptionTile(
+            isPremium: _isPremium,
+            remaining: _remaining,
+            isLoading: _isLoading,
           ),
-          if (subscriptionAsync.valueOrNull?.isPremium == false)
+          if (!_isLoading && !_isPremium)
             _SettingsTile(
               icon: Icons.workspace_premium,
               iconColor: const Color(0xFFF59E0B),
@@ -55,8 +87,8 @@ class SettingsScreen extends ConsumerWidget {
             title: '카테고리 설정',
             subtitle: '관심 카테고리를 선택하세요',
             onTap: () => context.push('/categories').then((changed) {
-            if (changed == true) context.pop(true);
-          }),
+              if (changed == true) context.pop(true);
+            }),
           ),
         ],
       ),
@@ -114,20 +146,23 @@ class _SubscriptionTile extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: isPremium
-                    ? const Color(0xFFF59E0B).withOpacity(0.1)
-                    : const Color(0xFF6B21A8).withOpacity(0.1),
+                    ? const Color(0xFFF59E0B).withValues(alpha: 0.1)
+                    : const Color(0xFF6B21A8).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 isPremium ? Icons.workspace_premium : Icons.person,
-                color: isPremium ? const Color(0xFFF59E0B) : const Color(0xFF6B21A8),
+                color: isPremium
+                    ? const Color(0xFFF59E0B)
+                    : const Color(0xFF6B21A8),
                 size: 22,
               ),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: isLoading
-                  ? const Text('불러오는 중...', style: TextStyle(color: Colors.black54))
+                  ? const Text('불러오는 중...',
+                      style: TextStyle(color: Colors.black54))
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -185,13 +220,21 @@ class _SettingsTile extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
+            color: iconColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: iconColor, size: 22),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black87)),
-        subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle:
+            Text(subtitle, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
       ),
     );
