@@ -120,6 +120,7 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
                 selectedAnswer: selected,
                 answerResult: result,
                 isSubmitting: isLoading,
+                isDailyLimitReached: quizState.isDailyLimitReached,
                 onAnswerSelected: (answer) {
                   if (selected == null && !isLoading) {
                     ref.read(quizProvider.notifier).submitAnswer(question.id, answer);
@@ -141,6 +142,7 @@ class _QuizCard extends StatelessWidget {
   final int? selectedAnswer;
   final AnswerResult? answerResult;
   final bool isSubmitting;
+  final bool isDailyLimitReached;
   final ValueChanged<int> onAnswerSelected;
   final VoidCallback onNext;
 
@@ -149,6 +151,7 @@ class _QuizCard extends StatelessWidget {
     required this.selectedAnswer,
     required this.answerResult,
     required this.isSubmitting,
+    required this.isDailyLimitReached,
     required this.onAnswerSelected,
     required this.onNext,
   });
@@ -210,22 +213,42 @@ class _QuizCard extends StatelessWidget {
                           explanation: answerResult!.explanation,
                         ),
                         const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: onNext,
-                            icon: const Icon(Icons.arrow_forward),
-                            label: const Text('다음 문제'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6B21A8),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        if (isDailyLimitReached)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3E8FF),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF6B21A8).withValues(alpha: 0.3)),
+                            ),
+                            child: const Text(
+                              '오늘 퀴즈를 모두 풀었어요! 내일 다시 오세요. 🎉',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Color(0xFF6B21A8),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                          )
+                        else
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: onNext,
+                              icon: const Icon(Icons.arrow_forward),
+                              label: const Text('다음 문제'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF6B21A8),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     ],
                   ),
