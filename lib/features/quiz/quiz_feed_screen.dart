@@ -103,6 +103,7 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
           return PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
+            physics: const ClampingScrollPhysics(),
             onPageChanged: (index) => _onPageChanged(index, quizState),
             itemCount: quizState.questions.length + (quizState.isLoadingMore ? 1 : 0),
             itemBuilder: (context, index) {
@@ -172,6 +173,7 @@ class _QuizCard extends StatelessWidget {
               // 문제 내용
               Expanded(
                 child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -196,7 +198,7 @@ class _QuizCard extends StatelessWidget {
                           selectedAnswer: selectedAnswer,
                           correctAnswer: answerResult?.answer,
                           isSubmitting: isSubmitting,
-                          onTap: () => onAnswerSelected(optionIndex),
+                          onTap: () => onAnswerSelected(i),
                         );
                       }),
 
@@ -288,34 +290,37 @@ class _OptionButton extends StatelessWidget {
     required this.onTap,
   });
 
+  // selectedAnswer는 0-based (0~3), index와 correctAnswer는 1-based (1~4)
+  bool get _isSelectedOption => selectedAnswer != null && selectedAnswer! + 1 == index;
+
   Color _getBackgroundColor() {
     if (selectedAnswer == null) return const Color(0xFFF8F8F8);
     // 로딩 중: 선택한 보기만 노란색
-    if (isSubmitting && index == selectedAnswer) return Colors.amber.withValues(alpha: 0.1);
+    if (isSubmitting && _isSelectedOption) return Colors.amber.withValues(alpha: 0.1);
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFFDCFCE7);
-    if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFFFE4E6);
+    if (_isSelectedOption && index != correctAnswer) return const Color(0xFFFFE4E6);
     return const Color(0xFFF8F8F8);
   }
 
   Color _getBorderColor() {
     if (selectedAnswer == null) return const Color(0xFFE5E7EB);
     // 로딩 중: 선택한 보기만 노란색
-    if (isSubmitting && index == selectedAnswer) return Colors.amber;
+    if (isSubmitting && _isSelectedOption) return Colors.amber;
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFF22C55E);
-    if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFEF4444);
+    if (_isSelectedOption && index != correctAnswer) return const Color(0xFFEF4444);
     return const Color(0xFFE5E7EB);
   }
 
   Color _getTextColor() {
     if (selectedAnswer == null) return Colors.black87;
     // 로딩 중: 선택한 보기만 노란색
-    if (isSubmitting && index == selectedAnswer) return Colors.amber.shade700;
+    if (isSubmitting && _isSelectedOption) return Colors.amber.shade700;
     if (correctAnswer != null && index == correctAnswer) return const Color(0xFF16A34A);
-    if (index == selectedAnswer && selectedAnswer != correctAnswer) return const Color(0xFFDC2626);
+    if (_isSelectedOption && index != correctAnswer) return const Color(0xFFDC2626);
     return const Color(0xFF9CA3AF);
   }
 
-  bool get _isSelected => selectedAnswer == index;
+  bool get _isSelected => _isSelectedOption;
 
   @override
   Widget build(BuildContext context) {
@@ -368,7 +373,7 @@ class _OptionButton extends StatelessWidget {
                         fontSize: 15,
                         color: _getTextColor(),
                         fontWeight: selectedAnswer != null && index == correctAnswer
-                            ? FontWeight.w600
+                            ? FontWeight.w600  // correctAnswer는 1-based, index도 1-based
                             : FontWeight.normal,
                       ),
                     ),
