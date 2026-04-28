@@ -32,11 +32,11 @@ class UserRepository {
 
   Future<Map<String, dynamic>> getSubscriptionStatus(
       String androidId) async {
-    final data = await _supabase
-        .from('users')
-        .select()
-        .eq('android_id', androidId)
-        .single();
-    return data;
+    final result = await _supabase
+        .rpc('get_user_info', params: {'p_android_id': androidId});
+    if (result is List && result.isNotEmpty) {
+      return result[0] as Map<String, dynamic>;
+    }
+    return {};
   }
 }

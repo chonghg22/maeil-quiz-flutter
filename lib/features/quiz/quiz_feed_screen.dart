@@ -97,7 +97,31 @@ class _QuizFeedScreenState extends ConsumerState<QuizFeedScreen> {
         ),
         data: (quizState) {
           if (quizState.questions.isEmpty) {
-            return const Center(child: Text('오늘의 퀴즈를 모두 풀었어요! 내일 다시 오세요.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.check_circle_outline, size: 64, color: Color(0xFF6B21A8)),
+                  const SizedBox(height: 20),
+                  const Text(
+                    '오늘의 퀴즈를 모두 풀었어요!',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '내일 다시 오세요.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF4B5563),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           return PageView.builder(

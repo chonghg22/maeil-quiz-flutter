@@ -37,7 +37,7 @@ android {
         if (localPropsFile.exists()) {
             localProps.load(new FileInputStream(localPropsFile))
         }
-        manifestPlaceholders = [admobAppId: localProps.getProperty('admob.app.id', '')]
+        manifestPlaceholders += [admobAppId: localProps.getProperty('admob.app.id', '')]
     }
 
     signingConfigs {

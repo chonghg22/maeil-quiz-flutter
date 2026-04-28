@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/constants/app_constants.dart';
 import '../quiz/quiz_provider.dart';
 import 'settings_repository.dart';
@@ -22,13 +23,34 @@ class CategoryScreen extends ConsumerStatefulWidget {
 
 class _CategoryScreenState extends ConsumerState<CategoryScreen> {
   final _repo = SettingsRepository();
-  late String? _selected;
+  String? _selected;
   bool _isSaving = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _selected = categories.isNotEmpty ? categories.first : null; // 첫 번째 카테고리 기본값
+    _loadCurrentCategory();
+  }
+
+  Future<void> _loadCurrentCategory() async {
+    try {
+      final androidId = await ref.read(androidIdProvider.future);
+      final result = await Supabase.instance.client
+          .rpc('get_user_info', params: {'p_android_id': androidId});
+
+      if (result is List && result.isNotEmpty) {
+        final cats = result[0]['categories'];
+        if (cats is List && cats.isNotEmpty) {
+          _selected = cats[0].toString();
+        } else if (cats is String && cats.isNotEmpty) {
+          _selected = cats;
+        }
+      }
+    } catch (_) {}
+
+    _selected ??= categories.isNotEmpty ? categories.first : null;
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _save() async {
@@ -71,7 +93,9 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
         foregroundColor: const Color(0xFF6B21A8),
         elevation: 0,
       ),
-      body: Column(
+      body: _isLoading
+        ? const Center(child: CircularProgressIndicator(color: Color(0xFF6B21A8)))
+        : Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),

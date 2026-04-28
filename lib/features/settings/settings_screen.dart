@@ -31,19 +31,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (androidId.isEmpty) return;
 
       final result = await Supabase.instance.client
-          .from('users')
-          .select('daily_count, is_premium')
-          .eq('android_id', androidId)
-          .single();
+          .rpc('get_user_info', params: {'p_android_id': androidId});
 
-      final remaining =
-          (20 - (result['daily_count'] as int? ?? 0)).clamp(0, 20);
+      if (result is List && result.isNotEmpty) {
+        final user = result[0];
+        final remaining =
+            (20 - (user['daily_count'] as int? ?? 0)).clamp(0, 20);
 
-      if (mounted) {
-        setState(() {
-          _isPremium = result['is_premium'] as bool? ?? false;
-          _remaining = remaining;
-        });
+        if (mounted) {
+          setState(() {
+            _isPremium = user['is_premium'] as bool? ?? false;
+            _remaining = remaining;
+          });
+        }
       }
     } catch (_) {
       // 조회 실패 시 기본값 유지

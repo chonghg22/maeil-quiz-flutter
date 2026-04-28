@@ -32,16 +32,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _resetDailyCountIfNeeded(String androidId) async {
-    final supabase = Supabase.instance.client;
-    final today = DateTime.now().toLocal().toString().substring(0, 10);
-    await supabase
-        .from('users')
-        .update({
-          'daily_count': 0,
-          'daily_reset_at': DateTime.now().toIso8601String(),
-        })
-        .eq('android_id', androidId)
-        .lt('daily_reset_at', today);
+    await Supabase.instance.client.rpc('reset_daily_count', params: {
+      'p_android_id': androidId,
+    });
   }
 
   @override

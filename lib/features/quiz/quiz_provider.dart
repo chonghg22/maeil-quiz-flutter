@@ -71,23 +71,19 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
 
     String category = 'IT';
     try {
-      final userResult = await Supabase.instance.client
-          .from('users')
-          .select('categories')
-          .eq('android_id', androidId)
-          .maybeSingle();
+      final userInfo = await Supabase.instance.client
+          .rpc('get_user_info', params: {'p_android_id': androidId});
 
-      if (userResult != null && userResult['categories'] != null) {
-        final categories = userResult['categories'];
-        if (categories is List && categories.isNotEmpty) {
-          category = categories[0].toString();
-        } else if (categories is String && categories.isNotEmpty) {
-          category = categories;
+      if (userInfo is List && userInfo.isNotEmpty) {
+        final cats = userInfo[0]['categories'];
+        if (cats is List && cats.isNotEmpty) {
+          category = cats[0].toString();
+        } else if (cats is String && cats.isNotEmpty) {
+          category = cats;
         }
       }
     } catch (e) {
       debugPrint('categories fetch error: $e');
-      // 네트워크 오류 시 기본 카테고리(IT)로 진행
     }
 
     final questions = await _repo.fetchFeed(
@@ -154,11 +150,10 @@ class QuizNotifier extends AsyncNotifier<QuizState> {
       bool isDailyLimitReached = false;
       try {
         final countResult = await Supabase.instance.client
-            .from('users')
-            .select('daily_count')
-            .eq('android_id', androidId)
-            .single();
-        isDailyLimitReached = (countResult['daily_count'] as int) >= 20;
+            .rpc('get_user_info', params: {'p_android_id': androidId});
+        if (countResult is List && countResult.isNotEmpty) {
+          isDailyLimitReached = (countResult[0]['daily_count'] as int) >= 20;
+        }
       } catch (_) {}
 
       final updated = state.valueOrNull ?? current;

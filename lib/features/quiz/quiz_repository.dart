@@ -31,25 +31,11 @@ class QuizRepository {
     required int correctAnswer,
     required String explanation,
   }) async {
-    final userResult = await _supabase
-        .from('users')
-        .select('id')
-        .eq('android_id', androidId)
-        .single();
-    final userId = userResult['id'];
-
-    try {
-      await _supabase.from('user_history').insert({
-        'user_id': userId,
-        'question_id': questionId,
-        'is_correct': isCorrect,
-      });
-    } catch (_) {
-      // 히스토리 저장 실패해도 일일 카운트는 증가
-    }
-
-    await _supabase.rpc('increment_daily_count',
-        params: {'p_android_id': androidId});
+    await _supabase.rpc('submit_quiz_answer', params: {
+      'p_android_id': androidId,
+      'p_question_id': questionId,
+      'p_is_correct': isCorrect,
+    });
 
     return AnswerResult(
       correct: isCorrect,
