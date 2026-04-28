@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-const _adUnitId = 'REDACTED_ADMOB_BANNER_ID';
+const _adUnitId = String.fromEnvironment('ADMOB_BANNER_ID');
 
 class AdBannerWidget extends StatefulWidget {
   const AdBannerWidget({super.key});

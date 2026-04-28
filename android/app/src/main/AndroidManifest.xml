@@ -25,7 +25,7 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="REDACTED_ADMOB_APP_ID" />
+            android:value="${admobAppId}" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

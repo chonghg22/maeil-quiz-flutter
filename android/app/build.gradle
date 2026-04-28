@@ -30,6 +30,14 @@ android {
         targetSdk flutter.targetSdkVersion
         versionCode 5
         versionName "1.0.3"
+
+        // AdMob App ID (local.properties에서 읽음)
+        def localProps = new Properties()
+        def localPropsFile = rootProject.file('local.properties')
+        if (localPropsFile.exists()) {
+            localProps.load(new FileInputStream(localPropsFile))
+        }
+        manifestPlaceholders = [admobAppId: localProps.getProperty('admob.app.id', '')]
     }
 
     signingConfigs {
